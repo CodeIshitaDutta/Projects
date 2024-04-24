@@ -1,3 +1,6 @@
 [submodule "Informed"]
 	path = Informed
 	url = https://github.com/CodeIshitaDutta/HackDavis.git
+[submodule "InForMed/Frontend"]
+	path = InForMed/Frontend
+	url = https://github.com/CodeIshitaDutta/infomed_interface.git
