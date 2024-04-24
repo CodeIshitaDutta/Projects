@@ -1,0 +1,105 @@
+```{r}
+library(tidyverse)
+library(palmerpenguins)
+library(Rtsne)
+set.seed(142) # for reproducibility
+```
+
+# example with iris set
+
+https://ajitjohnson.com/tsne-for-biologist-tutorial/
+
+```{r}
+## Learning t-SNE Plotting
+## Load dataset
+IR <- iris # Loading the iris dataset into a object called IR
+
+## Split IR into two objects: 1) containing measurements 2) containing species type
+IR_data <- IR[ ,1:4] # We are sub-setting IR object such as to include 'all rows' and columns 1 to 4.
+IR_species <- IR[ ,5] # We are sub-setting IR object such as to include 'all rows' and column 5.
+
+## Load the t-SNE library
+library(Rtsne)
+
+## Run the t-SNE algorithm and store the results into an object called tsne_results
+tsne_results <- Rtsne(IR_data, perplexity=30, check_duplicates = FALSE) # You can change the value of perplexity and see how the plot changes
+
+## Generate the t_SNE plot
+plot(tsne_results$Y, col = "blue", pch = 19, cex = 1.5) # Plotting the first image
+plot(tsne_results$Y, col = "black", bg= IR_species, pch = 21, cex = 1.5) # Second plot: Color the plot by the real species type (bg= IR_species)
+
+```
+
+
+
+# example with palmer penguins set
+
+https://datavizpyr.com/how-to-make-tsne-plot-in-r/
+
+```{r}
+penguins <- penguins %>% 
+  drop_na() %>%           # remove null values
+  select(-year)%>%        # remove the year column/variable
+  mutate(ID=row_number()) # Assign a row number to keep track of each penguin
+penguins
+```
+```{r}
+penguins_meta <- penguins %>%
+  select(ID,species,island,sex)     # All of the data that is not numerical, used as legend later
+penguins_meta 
+```
+```{r}
+
+tSNE_fit <- penguins %>%
+  # All numeric columns only, will help make model. categorical columns are legend
+  select(where(is.numeric)) %>%
+  # Not sure what this does either
+  column_to_rownames("ID") %>%
+  # scale the data
+  scale() %>% 
+  #run tSNE
+  Rtsne()
+tSNE_fit
+```
+```{r}
+# from the tSNE call, we need $Y for the visualization. Here, we name the columns of Y for ease.
+tSNE_df <- tSNE_fit$Y %>% 
+  as.data.frame() %>%
+  rename(tSNE1="V1",
+         tSNE2="V2") %>%
+  mutate(ID=row_number()) # sets each value pair to the proper row ID(ie. penguin)
+tSNE_df
+```
+```{r}
+# adding the column id helps us join the tSNE data with the categorical values we had
+# identified in the metadata
+tSNE_df <- tSNE_df %>%
+  inner_join(penguins_meta, by="ID")
+tSNE_df
+# from here, we visualize using ggplot.
+```
+```{r}
+tSNE_df %>%
+  ggplot(aes(x = tSNE1, 
+             y = tSNE2,
+             color = species,
+             shape = sex))+
+  geom_point()
+
+tSNE_df %>%
+  ggplot(aes(x = tSNE1, 
+             y = tSNE2,
+             color = species,
+             shape = island))+
+  geom_point()
+```
+
+
+
+
+
+
+
+
+
+
